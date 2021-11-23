@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todo_list/cong_viec.dart';
+import 'package:todo_list/add_to_do_dialog.dart';
+import 'package:todo_list/to_to.dart';
 
 void main() {
   runApp(
@@ -21,10 +22,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool _daBamNutXoa = false;
-  final List<CongViec> _listCongViec = [];
-  List<int> _listCongViecCanXoa = [];
   final TextEditingController _myControler = TextEditingController();
+  bool _clickDeleteButton = false;
+  final List<ToDo> _listToDo = [];
+  List<int> _listDelete = [];
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class _MyAppState extends State<MyApp> {
           IconButton(
               onPressed: () {
                 setState(() {
-                  _daBamNutXoa = !_daBamNutXoa;
+                  _clickDeleteButton = !_clickDeleteButton;
                 });
               },
               icon: const Icon(Icons.delete))
@@ -44,95 +45,76 @@ class _MyAppState extends State<MyApp> {
       ),
       body: ListView(
         children: [
-          for (var i = 0; i < _listCongViec.length; i++) hienThiCongViec(i)
+          for (var i = 0; i < _listToDo.length; i++) displayToDoList(i)
         ],
       ),
       floatingActionButton: add(context),
-      bottomNavigationBar: _daBamNutXoa ? hienThiNutXoa() : null,
+      bottomNavigationBar: _clickDeleteButton ? displayDeleteButton() : null,
     );
   }
 
-  Widget hienThiCongViec(int i) {
-    return _daBamNutXoa
+  Widget displayToDoList(int i) {
+    return _clickDeleteButton
         ? CheckboxListTile(
-            title: textCongViec(i),
-            value: _listCongViec[i].check,
+            title: textToDo(i),
+            value: _listToDo[i].check,
             onChanged: (_) {
               setState(() {
-                _listCongViec[i].check = !_listCongViec[i].check;
-                if (_listCongViec[i].check) _listCongViecCanXoa.add(i);
+                _listToDo[i].check = !_listToDo[i].check;
+                if (_listToDo[i].check) _listDelete.add(i);
               });
             },
           )
-        : textCongViec(i);
+        : textToDo(i);
   }
 
-  Text textCongViec(int i) {
+  Text textToDo(int i) {
     return Text(
-      _listCongViec[i].congViec,
+      _listToDo[i].toDo,
       style: const TextStyle(
         fontSize: 25,
       ),
     );
   }
 
-  void listCongViec() {
-    CongViec cv = CongViec();
-    cv.congViec = _myControler.text;
-    _listCongViec.add(cv);
+  void listToDo(String toDo) {
+    ToDo td = ToDo();
+    td.toDo = toDo;
+    setState(() {
+      _listToDo.add(td);
+    });
   }
 
   FloatingActionButton add(context) {
     return FloatingActionButton(
       onPressed: () {
-        setState(() {
-          hienThiDiaLog(context);
-        });
+        displayDialog(context);
       },
       child: const Icon(Icons.add),
     );
   }
 
-  hienThiNutXoa() {
+  displayDeleteButton() {
     return BottomAppBar(
       child: ElevatedButton(
         onPressed: () {
-          setState(() {
-            for (var i in _listCongViecCanXoa) {
-              _listCongViec.removeAt(i);
-            }
-            _listCongViecCanXoa = [];
-          });
+          for (var i in _listDelete) {
+            setState(() {
+              _listToDo.removeAt(i);
+            });
+          }
+          _listDelete = [];
         },
         child: const Text('xóa'),
       ),
     );
   }
 
-  hienThiDiaLog(BuildContext context) async {
+  displayDialog(BuildContext context) async {
     return showDialog(
       context: context,
       builder: (_) {
-        return AlertDialog(
-          title: const Text('nhập công việc'),
-          content: Column(
-            children: [
-              TextField(
-                controller: _myControler,
-                decoration:
-                    const InputDecoration(hintText: 'nhập công việc vào đây'),
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      Navigator.pop(context);
-                      listCongViec();
-                    });
-                  },
-                  child: const Text('thêm công việc'))
-            ],
-          ),
-        );
+        return AddToDoDialog(toDoList: (val) => listToDo(val));
       },
     );
   }
