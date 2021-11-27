@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list_v2/add_to_do_list.dart';
+import 'package:to_do_list_v2/provider_form.dart';
 import 'package:to_do_list_v2/provider_to_do_list.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(
-    create: (_) => ProviderToDoList(),
-    child: MaterialApp(
-      theme: ThemeData.dark(),
-      home: MyApp(),
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ProviderToDoList(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProviderForm(),
+        ),
+      ],
+      child: MaterialApp(
+        theme: ThemeData.dark(),
+        home: MyApp(),
+      ),
     ),
-  ));
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -50,9 +60,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        child: AddToDoList(
-          toDoList: (value) => context.read<ProviderToDoList>().add(value),
-        ),
+        child: AddToDoList(),
       ),
     );
   }
